@@ -47,6 +47,12 @@ const routes = [
     meta: { auth: true, layout: 'main' }
   },
   {
+    path: '/projects/:id',
+    name: 'Project',
+    component: () => import('../views/Projects/ProjectOverview.vue'),
+    meta: { auth: true, layout: 'main' }
+  },
+  {
     path:  '*',
     name: '404',
     component: () => import('../views/404.vue'),

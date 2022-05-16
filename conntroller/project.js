@@ -45,7 +45,6 @@ class Project {
           },
         }
       });
-      console.log(project);
       await project.save();
       return res.status(201).json({ message: "Project created successfully" });
     } catch (e) {
@@ -116,6 +115,66 @@ class Project {
       });
       await project.save();
       return res.status(200).json({ message: "User added successfully" });
+    } catch (e) {
+      return res.status(500).json({ message: `Error in ${e}, pls try again` });
+    }
+  }
+  async removeUser(req, res) {
+    try {
+      const id = req.params.id
+      if (!id) {
+        return res.status(404).json({ message: "Please provide a valid id" });
+      }
+      const { user } = req.body;
+      const candidate = await userModel.findOne({ email: user.email });
+      if (!candidate) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const project = await projectModel.findById(id);
+      project.users = project.users.filter(
+        (user) => user.user_id.toString() !== candidate._id.toString() 
+      );
+      await project.save();
+      return res.status(200).json({ message: "User removed successfully" });
+    } catch (e) {
+      return res.status(500).json({ message: `Error in ${e}, pls try again` });
+    }
+  }
+  async addPermission(req, res) {
+    try {
+      const id = req.params.id;
+      if (!id) {
+        return res.status(404).json({ message: "Please provide a valid id" });
+      }
+      const { user } = req.body;
+      const candidate = await userModel.findOne({ email: user.email });
+      if (!candidate) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      const project = await projectModel.findById(id);
+      const userExists = project.users.find(
+        (user) => user.user_id.toString() === candidate._id.toString()
+      );
+      if (!userExists) {
+        return res.status(400).json({ message: "User does not exist" });
+      }
+      userExists.role = user.role;
+      if (user.role == "member") {
+        userExists.permissions = {
+          create: user.permissions.create,
+          read: user.permissions.read,
+          update: user.permissions.update,
+          delete: user.permissions.delete,
+        }
+      } else {
+        userExists.permissions = {
+          create: true,
+          read: true,
+          update: true,
+          delete: true,
+        }
+      }
+      await project.save();
     } catch (e) {
       return res.status(500).json({ message: `Error in ${e}, pls try again` });
     }

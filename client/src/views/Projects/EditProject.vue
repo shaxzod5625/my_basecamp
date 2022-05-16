@@ -39,18 +39,62 @@
             </div> 
           </div>
         </form>
-        <form action="">
+        <p class="my-0 text-muted" >Members:</p>
+        <div class="row">
+          <div class="col-1 p-0  text-right">
+              <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-emoji-smile" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path><path fill-rule="evenodd" d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683z"></path></svg>
+          </div>
+          <div class="col-3 text-truncate"><small>fdfdfdfdfdfdffdfdfdfd@mail.ru</small></div>
+          <div class="col-6 text-right d-flex">
+              <a class="btn btn-outline-dark  btn-sm" rel="nofollow" data-method="put" href="/projects/112/members/49?is_admin=true">Add Admin Role</a>
+            <div class="permission-form">
+              <div class="dropdown update_btn">
+                <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Change Permissions
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                  <form role="form" class="edit_member" id="edit_member_49" action="" accept-charset="UTF-8" method="post">
+                    <div class="form-check"><input name="member[can_write]" type="hidden" value="0">
+                      <input id="id-104" class="form-check-input" type="checkbox" value="1" name="member[can_write]">
+                      <label class="form-check-label" for="id-104">Can write tasks</label>
+                    </div>
+                    <div class="form-check"><input name="member[can_update]" type="hidden" value="0">
+                      <input id="id-94" class="form-check-input" type="checkbox" value="1" name="member[can_update]">
+                      <label class="form-check-label" for="id-94">Can update tasks</label>
+                    </div>
+                    <div class="form-check"><input name="member[can_delete]" type="hidden" value="0">
+                      <input id="id-68" class="form-check-input" type="checkbox" value="1" name="member[can_delete]">
+                      <label class="form-check-label" for="id-68">Can delete tasks</label>
+                    </div>
+                    <div class="form-check">
+                      <input name="member[can_read]" type="hidden" value="0">
+                      <input id="id-106" class="form-check-input" type="checkbox" value="1" name="member[can_read]">
+                      <label class="form-check-label" for="id-106">Can read tasks</label>
+                    </div>
+                    <div class="update_btn bottom">
+                      <button name="button" type="submit" class="btn btn-warning">Update permission</button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            </div>
+            <a class="btn btn-danger  btn-sm" data-confirm="Are you sure you want to delete this member?" rel="nofollow" data-method="delete" href="/projects/112/members/49">
+              <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg>
+            </a>
+          </div>
+        </div>
+        <form action="" @submit.prevent="addMember">
           <div class="row mt-4">
             <div class="col-6">
               <div class="form-group">
                 <label for="" class="text-muted required">Add Member (email)</label>
-                <input type="email" class="form-control">
+                <input type="email" class="form-control" v-model="addMemberEmail">
               </div>
             </div>
             <div class="col-2 align-self-end">
               <div class="custom-control custom-switch">
                 <input name="member[is_admin]" type="hidden" value="0">
-                <input class="custom-control-input" type="checkbox" id="member_is_admin">
+                <input class="custom-control-input" type="checkbox" id="member_is_admin" v-model="role">
                 <label class="custom-control-label" for="member_is_admin">Admin</label>
               </div>
             </div>
@@ -99,6 +143,8 @@ export default {
     members: [],
     title: '',
     description: '',
+    addMemberEmail: '',
+    role: false
   }),
   async mounted() {
     if (!this.$store.state.user) {
@@ -121,6 +167,13 @@ export default {
         id: id,
         title: this.title,
         description: this.description,
+      })
+    },
+    async addMember() {
+      await this.$store.dispatch('addMember', {
+        projectId: this.$route.params.id,
+        email: this.addMemberEmail,
+        role: this.role
       })
     }
   }

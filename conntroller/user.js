@@ -72,21 +72,6 @@ class UserController {
       return res.status(500).json({ message: `Error in ${e}, pls try again` });
     }
   }
-  async getByEmail(req, res) {
-    try {
-      const { email } = req.body;
-      const user = await userModel.findOne({ email });
-      if (!req.user.userId) {
-        return res.status(401).json({ message: "Unauthorized" });
-      }
-      if (!user) {
-        return res.status(404).json( { message: 'User is not exist' });
-      }
-      return res.status(200).json(user);
-    } catch (e) {
-      return res.status(500).json({ message: `Error in ${e}, pls try again` });
-    }
-  }
 }
 
 module.exports = new UserController()

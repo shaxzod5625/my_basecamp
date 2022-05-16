@@ -25,6 +25,8 @@ route.post('/projects/create', auth, Project.create);
 route.delete('/projects/delete/:id', auth, Project.delete);
 route.put('/projects/update/:id', auth, Project.update);
 route.post('/projects/addUser/:id', auth, Project.addUser)
+route.put('/projects/removeUser/:id', auth, Project.removeUser)
+route.put('/projects/addPermission/:id', auth, Project.addPermission)
 
 // Task
 route.get('/projects/:id/tasks', auth, Task.getAll);

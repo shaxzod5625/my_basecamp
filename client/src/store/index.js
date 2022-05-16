@@ -8,6 +8,7 @@ export default new Vuex.Store({
   state: {
     user: null,
     authErrorMessage: null,
+    errorMessage: null,
     token: null,
     projects: [],
     project: null,
@@ -39,6 +40,9 @@ export default new Vuex.Store({
     },
     SET_AUTH_ERROR_MESSAGE(state, message) {
       state.authErrorMessage = message;
+    },
+    SET_ERROR_MESSAGE(state, message) {
+      state.errorMessage = message;
     },
     EDIT_USER(state, user) {
       state.user = user;
@@ -191,6 +195,24 @@ export default new Vuex.Store({
         commit('DELETE_USER')
       } catch (e) {
         console.log(e)
+        throw e
+      }
+    },
+    // permissions
+    async addMember({ commit }, member) {
+      try {
+        await axios.post(`${URL}/projects/addUser/${member.projectId}`, {
+          user: {
+            role: member.role,
+            email: member.email,
+          }
+        }, {
+          headers: {
+            Authorization: "Bearer " + localStorage.getItem("token"),
+          },
+        })
+      } catch (e) {
+        commit("SET_ERROR_MESSAGE", e.response.data.message);
         throw e
       }
     }
