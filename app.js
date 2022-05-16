@@ -9,8 +9,9 @@ app.use(require('cors')())
 app.use(express.json());
 
 app.use('/api', route);
+// mongodb://localhost:27017/my_basecamp
 // process.env.DB_URL
-mongoose.connect('mongodb://localhost:27017/my_basecamp', {
+mongoose.connect(process.env.DB_URL, {
   useNewUrlParser: true,
   useUnifiedTopology: true
 }, (err) => {
