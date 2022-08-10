@@ -1,5 +1,8 @@
 <template>
   <div class="container form">
+    <b-alert v-model="showDismissibleAlert" variant="danger" dismissible>
+      {{ alertMessage }}
+    </b-alert>
     <div class="row h-100 justify-content-center">
       <div class="col-10 mt-5">
         <h2 class="text-center">
@@ -39,36 +42,37 @@
             </div> 
           </div>
         </form>
-        <p class="my-0 text-muted" >Members:</p>
-        <div class="row">
+        <p class="my-0 text-muted">Members:</p>
+        <div class="row mb-3" v-for="member in project.users" :key="member._id">
           <div class="col-1 p-0  text-right">
               <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-emoji-smile" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path><path fill-rule="evenodd" d="M4.285 9.567a.5.5 0 0 1 .683.183A3.498 3.498 0 0 0 8 11.5a3.498 3.498 0 0 0 3.032-1.75.5.5 0 1 1 .866.5A4.498 4.498 0 0 1 8 12.5a4.498 4.498 0 0 1-3.898-2.25.5.5 0 0 1 .183-.683z"></path></svg>
           </div>
-          <div class="col-3 text-truncate"><small>fdfdfdfdfdfdffdfdfdfd@mail.ru</small></div>
+          <div class="col-3 text-truncate">
+            <small>{{ member.email }}</small>
+          </div>
           <div class="col-6 text-right d-flex">
-              <a class="btn btn-outline-dark  btn-sm" rel="nofollow" data-method="put" href="/projects/112/members/49?is_admin=true">Add Admin Role</a>
+            <a class="btn btn-outline-dark btn-sm" @click.prevent="makeAdmin(member, $event)" rel="nofollow" data-method="put" href="/">{{ member.role != 'admin' ? 'Add Admin Role' : 'Remove admin role' }}</a>
             <div class="permission-form">
               <div class="dropdown update_btn">
-                <button class="btn btn-outline-dark btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <button class="btn btn-outline-dark btn-sm dropdown-toggle ml-3 mr-3" @click="active = !active" :class="{ show: active }" type="button">
                   Change Permissions
                 </button>
-                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                  <form role="form" class="edit_member" id="edit_member_49" action="" accept-charset="UTF-8" method="post">
-                    <div class="form-check"><input name="member[can_write]" type="hidden" value="0">
-                      <input id="id-104" class="form-check-input" type="checkbox" value="1" name="member[can_write]">
+                <div class="dropdown-menu" :style="active ? 'display: block' : 'display: none'">
+                  <form role="form" class="edit_member" id="edit_member_49" action="" @submit.prevent="updatePermission($event, member)" accept-charset="UTF-8" method="post">
+                    <div class="form-check">
+                      <input id="id-104" v-model="member.permissions.create" class="form-check-input" type="checkbox" value="1" name="member[can_write]">
                       <label class="form-check-label" for="id-104">Can write tasks</label>
                     </div>
-                    <div class="form-check"><input name="member[can_update]" type="hidden" value="0">
-                      <input id="id-94" class="form-check-input" type="checkbox" value="1" name="member[can_update]">
+                    <div class="form-check">
+                      <input id="id-94" v-model="member.permissions.update" class="form-check-input" type="checkbox" value="1" name="member[can_update]">
                       <label class="form-check-label" for="id-94">Can update tasks</label>
                     </div>
-                    <div class="form-check"><input name="member[can_delete]" type="hidden" value="0">
-                      <input id="id-68" class="form-check-input" type="checkbox" value="1" name="member[can_delete]">
+                    <div class="form-check">
+                      <input id="id-68" v-model="member.permissions.delete" class="form-check-input" type="checkbox" value="1" name="member[can_delete]">
                       <label class="form-check-label" for="id-68">Can delete tasks</label>
                     </div>
                     <div class="form-check">
-                      <input name="member[can_read]" type="hidden" value="0">
-                      <input id="id-106" class="form-check-input" type="checkbox" value="1" name="member[can_read]">
+                      <input id="id-106" v-model="member.permissions.read" class="form-check-input" type="checkbox" value="1" name="member[can_read]">
                       <label class="form-check-label" for="id-106">Can read tasks</label>
                     </div>
                     <div class="update_btn bottom">
@@ -78,7 +82,7 @@
                 </div>
               </div>
             </div>
-            <a class="btn btn-danger  btn-sm" data-confirm="Are you sure you want to delete this member?" rel="nofollow" data-method="delete" href="/projects/112/members/49">
+            <a class="btn btn-danger btn-sm" @click.prevent="deleteMember(member)" rel="nofollow" href="#">
               <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg>
             </a>
           </div>
@@ -93,7 +97,6 @@
             </div>
             <div class="col-2 align-self-end">
               <div class="custom-control custom-switch">
-                <input name="member[is_admin]" type="hidden" value="0">
                 <input class="custom-control-input" type="checkbox" id="member_is_admin" v-model="role">
                 <label class="custom-control-label" for="member_is_admin">Admin</label>
               </div>
@@ -140,11 +143,19 @@ export default {
   data: () => ({
     user: {},
     project: {},
-    members: [],
     title: '',
     description: '',
     addMemberEmail: '',
-    role: false
+    role: false,
+    active: false,
+    showDismissibleAlert: false,
+    alertMessage: '',
+    permissions: {
+      create: false,
+      read: false,
+      update: false,
+      delete: false
+    }
   }),
   async mounted() {
     if (!this.$store.state.user) {
@@ -173,8 +184,50 @@ export default {
       await this.$store.dispatch('addMember', {
         projectId: this.$route.params.id,
         email: this.addMemberEmail,
-        role: this.role
+        role: this.role ? 'admin' : 'member'
+      }).catch(err => {
+        this.showDismissibleAlert = true;
+        this.alertMessage = err.response.data.message;
       })
+      await this.$store.dispatch('getProject', this.$route.params.id);
+      this.project = this.$store.state.project;
+      this.addMemberEmail = '';
+    },
+    async deleteMember(member) {
+      await this.$store.dispatch('deleteMember', {member, projectId: this.$route.params.id})
+      await this.$store.dispatch('getProject', this.$route.params.id);
+      this.project = this.$store.state.project;
+    },
+    async updatePermission(e, member) {
+      this.permissions = {
+        create: e.path[0][0].checked,
+        read: e.path[0][1].checked,
+        update: e.path[0][2].checked,
+        delete: e.path[0][3].checked
+      }
+      await this.$store.dispatch('updatePermission', {
+        member,
+        projectId: this.$route.params.id,
+        permissions: this.permissions
+      })
+      await this.$store.dispatch('getProject', this.$route.params.id);
+      this.project = this.$store.state.project;
+    },
+    async makeAdmin(member, e) {
+      let admin = 'Remove admin role'
+      if (e.target.innerHTML != admin) {
+        await this.$store.dispatch('makeAdmin', {
+          member, projectId: this.$route.params.id
+        })
+        await this.$store.dispatch('getProject', this.$route.params.id);
+        this.project = this.$store.state.project;
+      } else {
+        await this.$store.dispatch('removeAdmin', {
+          member, projectId: this.$route.params.id
+        })
+        await this.$store.dispatch('getProject', this.$route.params.id);
+        this.project = this.$store.state.project;
+      }
     }
   }
 }

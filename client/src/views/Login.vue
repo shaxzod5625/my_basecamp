@@ -93,6 +93,7 @@ export default {
   methods: {
     async submit() {
       if (this.$v.$invalid) {
+        console.log('e')
         this.$v.$touch()
         this.showDismissibleAlert = true
         if (this.$v.email.$invalid) {
@@ -111,6 +112,7 @@ export default {
         })
         this.$router.push('/projects')
       } catch (e) {
+        console.log(e)
         this.alertMessage = this.$store.state.authErrorMessage
         this.showDismissibleAlert = true
         this.loading = false

@@ -1,7 +1,6 @@
 import Vue from "vue";
 import Vuex from "vuex";
-import axios from "axios";
-const URL = "http://localhost:3000/api";
+import Api from '@/services/api';
 Vue.use(Vuex);
 
 export default new Vuex.Store({
@@ -12,7 +11,11 @@ export default new Vuex.Store({
     token: null,
     projects: [],
     project: null,
-    currentPass: null
+    currentPass: null,
+    discussions: [],
+    discussion: null,
+    message: null,
+    attachments: [],
   },
   getters: {},
   mutations: {
@@ -56,13 +59,25 @@ export default new Vuex.Store({
       state.user = null
       state.currentPass = null
       localStorage.clear()
+    },
+    SET_DISCUSSIONS(state, discussions) {
+      state.discussions = discussions;
+    },
+    SET_DISCUSSION(state, discussion) {
+      state.discussion = discussion;
+    },
+    SET_MESSAGE(state, message) {
+      state.message = message;
+    },
+    SET_ATTACHMENTS(state, attachments) {
+      state.attachments = attachments;
     }
   },
   actions: {
     // auth
     async login({ commit }, user) {
       try {
-        const res = await axios.post(`${URL}/login`, user)
+        const res = await Api().post(`/login`, user)
         commit("SET_USER", res.data);
       } catch (e) {
         commit("SET_AUTH_ERROR_MESSAGE", e.response.data.message);
@@ -71,10 +86,10 @@ export default new Vuex.Store({
     },
     async register({ commit }, user) {
       try {
-        const res = await axios.post(`${URL}/register`, user)
+        const res = await Api().post(`/register`, user)
         commit("SET_USER", res.data);
       } catch (e) {
-        commit("SET_AUTH_ERROR_MESSAGE", err.response.data.message);
+        commit("SET_AUTH_ERROR_MESSAGE", e.response.data.message);
         throw e
       }
     },
@@ -84,11 +99,7 @@ export default new Vuex.Store({
     // projects
     async newProject({ commit }, project) {
       try {
-        await axios.post(`${URL}/projects/create`, project, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        });
+        await Api().post(`/projects/create`, project);
       } catch (e) {
         console.log(e);
         throw e
@@ -96,11 +107,7 @@ export default new Vuex.Store({
     },
     async deleteProject({ commit }, id) {
       try {
-        await axios.delete(`${URL}/projects/delete/${id}`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        });
+        await Api().delete(`/projects/delete/${id}`);
       } catch (e) {
         console.log(e);
         throw e
@@ -108,24 +115,19 @@ export default new Vuex.Store({
     },
     async getProjects({ commit }) {
       try {
-        const data = await axios.get(`${URL}/projects/all`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        });
+        const data = await Api().get(`/projects/all`);
         commit("SET_PROJECTS", data.data);
       } catch (e) {
+        if (e.response.status === 401) {
+          commit("LOGOUT");
+        }
         console.log(e);
         throw e
       }
     },
     async getProject({ commit }, id) {
       try {
-        const res = await axios.get(`${URL}/projects/${id}`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        })
+        const res = await Api().get(`/projects/${id}`)
         commit('SET_PROJECT', res.data)
       } catch (e) {
         console.log(e)
@@ -134,11 +136,7 @@ export default new Vuex.Store({
     },
     async updateProject({ commit }, project) {
       try {
-        const res = await axios.put(`${URL}/projects/update/${project.id}`, project, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          }
-        })
+        const res = await Api().put(`/projects/update/${project.id}`, project)
         commit('SET_PROJECT', res.data)
       } catch (e) {
         console.log(e)
@@ -148,11 +146,7 @@ export default new Vuex.Store({
     // user
     async getUser({ commit }, id) {
       try {
-        const res = await axios.get(`${URL}/user/${id}`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        });
+        const res = await Api().get(`/user/${id}`);
         commit("SET_USER", res.data);
       } catch (e) {
         console.log(e)
@@ -161,11 +155,7 @@ export default new Vuex.Store({
     },
     async checkPass({ commit }, password) {
       try {
-        const res = await axios.post(`${URL}/user/${localStorage.getItem('userId')}/checkpass`, password, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        });
+        const res = await Api().post(`/user/${localStorage.getItem('userId')}/checkpass`, password);
         commit("SET_PASS", res.data);
       } catch (e) {
         console.log(e)
@@ -174,11 +164,7 @@ export default new Vuex.Store({
     },
     async editUser({ commit }, user) {
       try {
-        const res = await axios.put(`${URL}/user/edit/${user.id}`, user, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          }
-        })
+        const res = await Api().put(`/user/edit/${user.id}`, user)
         commit('EDIT_USER', res.data)
       } catch (e) {
         console.log(e)
@@ -187,11 +173,7 @@ export default new Vuex.Store({
     },
     async deleteUser({ commit }, id) {
       try {
-        await axios.delete(`${URL}/user/delete/${id}`, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
-        })
+        await Api().delete(`/user/delete/${id}`)
         commit('DELETE_USER')
       } catch (e) {
         console.log(e)
@@ -201,18 +183,197 @@ export default new Vuex.Store({
     // permissions
     async addMember({ commit }, member) {
       try {
-        await axios.post(`${URL}/projects/addUser/${member.projectId}`, {
+        await Api().post(`/projects/addUser/${member.projectId}`, {
           user: {
             role: member.role,
             email: member.email,
           }
-        }, {
-          headers: {
-            Authorization: "Bearer " + localStorage.getItem("token"),
-          },
         })
       } catch (e) {
         commit("SET_ERROR_MESSAGE", e.response.data.message);
+        throw e
+      }
+    },
+    async deleteMember({ commit }, data) {
+      try {
+        await Api().put(`/projects/removeUser/${data.projectId}`, {
+          user: data.member
+        })
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async updatePermission({ commit }, data) {
+      try {
+        await Api().put(`/projects/addPermission/${data.projectId}`, {
+          user: {
+            role: data.member.role,
+            email: data.member.email,
+            permissions: data.permissions,
+            user_id: data.member.user_id
+          }
+        })
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async makeAdmin({ commit }, data) {
+      try {
+        await Api().put(`/projects/addPermission/${data.projectId}`, {
+          user: {
+            role: 'admin',
+            email: data.member.email,
+            permissions: data.member.permissions,
+            user_id: data.member.user_id
+          }
+        })
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async removeAdmin({ commit }, data) {
+      try {
+        await Api().put(`/projects/addPermission/${data.projectId}`, {
+          user: {
+            role: 'member',
+            email: data.member.email,
+            permissions: data.member.permissions,
+            user_id: data.member.user_id
+          }
+        })
+      } catch (e) {
+        console.log(e);
+        throw e
+      }
+    },
+    // discussions
+    async getDiscussions({ commit }, id) {
+      try {
+        const res = await Api().get(`/projects/${id}/discussion`);
+        commit("SET_DISCUSSIONS", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async getDiscussion({ commit }, data) {
+      try {
+        const res = await Api().get(`/projects/${data.id}/discussion/${data.discussion_id}`);
+        commit("SET_DISCUSSION", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async newDiscussion({ commit }, data) {
+      try {
+        const res = await Api().post(`/projects/${data.id}/discussion/create`, {
+          title: data.title,
+          owner: data.user_id,
+        });
+        commit("SET_DISCUSSION", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async updataDiscussion({ commit }, data) {
+      try {
+        const res = await Api().put(`/projects/${data.id}/discussion/${data.discussion_id}/update`, {
+          title: data.title,
+          messages: data.messages,
+        });
+        commit("SET_DISCUSSION", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async deleteDiscussion({ commit }, data) {
+      try {
+        await Api().delete(`/projects/${data.id}/discussion/${data.discussion_id}/delete`);
+        commit("SET_DISCUSSION", null);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    // messages
+    async getMessage({ commit }, data) {
+      try {
+        const res = await Api().get(`/projects/${data.id}/discussion/${data.discussion_id}/${data.message_id}`);
+        commit("SET_MESSAGE", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async newMessage({ commit }, data) {
+      try {
+        const res = await Api().post(`/projects/${data.id}/discussion/${data.discussion_id}/addMessage`, {
+          message: data.message,
+          user_id: data.user_id,
+        });
+        commit("SET_MESSAGE", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async updateMessage({ commit }, data) {
+      try {
+        const res = await Api().put(`/projects/${data.id}/discussion/${data.discussion_id}/updateMessage/${data.message_id}`, {
+          messagetext: data.message,
+          user_id: data.user_id,
+        })
+        commit("SET_MESSAGE", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async deleteMessage({ commit }, data) {
+      try {
+        await Api().delete(`/discussion/${data.id}/deleteMessage`, {
+          message_id: data.message_id,
+        })
+        commit("SET_MESSAGE", null);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    // attachments
+    async getAttachments({ commit }, id) {
+      try {
+        const res = await Api().get(`/projects/${id}/attachments`);
+        commit("SET_ATTACHMENTS", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    newAttachments({ commit }, data) {
+      try {
+        const res = Api().post(`/projects/${data.id}/attachments`, {
+          file: data.file,
+          name: data.name,
+        });
+        commit("SET_ATTACHMENTS", res.data);
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async deleteAttachment({ commit }, data) {
+      try {
+        await Api().delete(`/projects/${data.id}/attachments/${data.attachment_id}`);
+        commit("SET_ATTACHMENTS", null);
+      } catch (e) {
+        console.log(e)
         throw e
       }
     }

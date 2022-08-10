@@ -53,6 +53,18 @@ const routes = [
     meta: { auth: true, layout: 'main' }
   },
   {
+    path: '/projects/:id/discussion/:discussion_id/edit',
+    name: 'EditDiscussion',
+    component: () => import('../views/Projects/Discussion/Edit.vue'),
+    meta: { auth: true, layout: 'main' }
+  },
+  {
+    path: '/projects/:id/discussion/:discussion_id/message/:message_id',
+    name: 'MessageEdit',
+    component: () => import('../views/Projects/Discussion/MessageEdit.vue'),
+    meta: { auth: true, layout: 'main' }
+  },
+  {
     path:  '*',
     name: '404',
     component: () => import('../views/404.vue'),

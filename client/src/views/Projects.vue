@@ -31,7 +31,8 @@
                       <h5>{{ project.title }}</h5>
                     </router-link>
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-pen" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M5.707 13.707a1 1 0 0 1-.39.242l-3 1a1 1 0 0 1-1.266-1.265l1-3a1 1 0 0 1 .242-.391L10.086 2.5a2 2 0 0 1 2.828 0l.586.586a2 2 0 0 1 0 2.828l-7.793 7.793zM3 11l7.793-7.793a1 1 0 0 1 1.414 0l.586.586a1 1 0 0 1 0 1.414L5 13l-3 1 1-3z"></path><path fill-rule="evenodd" d="M9.854 2.56a.5.5 0 0 0-.708 0L5.854 5.855a.5.5 0 0 1-.708-.708L8.44 1.854a1.5 1.5 0 0 1 2.122 0l.293.292a.5.5 0 0 1-.707.708l-.293-.293z"></path><path d="M13.293 1.207a1 1 0 0 1 1.414 0l.03.03a1 1 0 0 1 .03 1.383L13.5 4 12 2.5l1.293-1.293z"></path></svg>
-                    <small>Shaxzod</small>
+                    <div style="display: none;">{{ getUser(project.user_id) }}</div>
+                    <small>{{user_name}}</small>
                   </div>
                   <div class="col-auto">
                     <router-link :to="`/projects/${project._id}/edit`">
@@ -47,7 +48,7 @@
                 <div class="row">
                   <div class="col-auto mr-auto">
                     <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-people" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8zm-7.995-.944v-.002.002zM7.022 13h7.956a.274.274 0 0 0 .014-.002l.008-.002c-.002-.264-.167-1.03-.76-1.72C13.688 10.629 12.718 10 11 10c-1.717 0-2.687.63-3.24 1.276-.593.69-.759 1.457-.76 1.72a1.05 1.05 0 0 0 .022.004zm7.973.056v-.002.002zM11 7a2 2 0 1 0 0-4 2 2 0 0 0 0 4zm3-2a3 3 0 1 1-6 0 3 3 0 0 1 6 0zM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816zM4.92 10c-1.668.02-2.615.64-3.16 1.276C1.163 11.97 1 12.739 1 13h3c0-1.045.323-2.086.92-3zM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"></path></svg>
-                    <span class="badge badge-secondary">1</span>
+                    <span class="badge badge-secondary">{{ project.users.length }}</span>
                     <i class="ml-2 mr-1 fa fa-comments-o" aria-hidden="true"></i><span class="badge badge-secondary">0</span>
                   </div>
                   <div class="col-auto">
@@ -68,7 +69,8 @@
 export default {
   name: "Projects",
   data: () => ({
-    projects: []
+    projects: [],
+    user_name: ''
   }),
   async mounted() {
     await this.$store.dispatch('getProjects')
@@ -79,6 +81,11 @@ export default {
       await this.$store.dispatch('deleteProject', id)
       this.projects.splice(this.projects.findIndex(project => project._id === id), 1)
       this.$store.state.projects = this.projects
+    },
+    async getUser(id) {
+      await this.$store.dispatch('getUser', id)
+      this.user_name = this.$store.state.user.name
+      return this.user_name
     }
   }
 };

@@ -5,6 +5,8 @@ const User = require('../conntroller/user');
 const Project = require('../conntroller/project');
 const Task = require('../conntroller/task');
 const auth = require('../middleware/auth.middleware');
+const Discussion = require('../conntroller/discussion');
+const Attachments = require('../conntroller/Attachments');
 
 // Auth
 route.post('/register', Auth.register);
@@ -35,7 +37,20 @@ route.post('/projects/:id/tasks/create', auth, Task.create);
 route.delete('/projects/:id/tasks/delete/:id', auth, Task.delete);
 route.put('/projects/:id/tasks/update/:id', auth, Task.update);
 
-// subtask
+// discussion
+route.get('/projects/:id/discussion', auth, Discussion.getAll);
+route.get('/projects/:id/discussion/:discussion_id', auth, Discussion.getOne);
+route.post('/projects/:id/discussion/create', auth, Discussion.create);
+route.put('/projects/:id/discussion/:discussion_id/update', auth, Discussion.update);
+route.delete('/projects/:id/discussion/:discussion_id/delete', auth, Discussion.delete);
+route.post('/projects/:id/discussion/:discussion_id/addMessage', auth, Discussion.addMessage);
+route.get('/projects/:id/discussion/:discussion_id/:message_id', auth, Discussion.getMessage);
+route.put('/projects/:id/discussion/:discussion_id/updateMessage/:message_id', auth, Discussion.updateMessage);
+route.delete('/projects/:id/discussion/:discussion_id/deleteMessage/:message_id', auth, Discussion.deleteMessage);
 
+// Attension
+route.get('/projects/:id/attachments', auth, Attachments.getAll);
+route.post('/projects/:id/attachments', auth, Attachments.create);
+route.delete('/projects/:id/attachments/:attachment_id', auth, Attachments.delete);
 
 module.exports = route;

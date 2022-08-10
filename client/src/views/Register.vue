@@ -76,7 +76,7 @@
 import { required, email, minLength, sameAs } from 'vuelidate/src/validators'
 import Loader from '../components/Loader.vue'
 export default {
-  name: 'Login',
+  name: 'Register',
   components: {Loader},
   created() {
     document.title = 'Sign up'
@@ -134,12 +134,12 @@ export default {
           email: this.email,
           password: this.password,
         })
+        this.$router.push('/projects')
       } catch (e) {
         this.alertMessage = this.$store.state.authErrorMessage
         this.showDismissibleAlert = true
         this.loading = false
       }
-      this.$router.push('/login')
     }
   }
 }

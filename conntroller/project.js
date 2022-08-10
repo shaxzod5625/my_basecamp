@@ -1,10 +1,10 @@
-const projectModel = require("../models/Project");
+const projectModel = require("../models/Project.js");
 const userModel = require('../models/User.js');
 
 class Project {
   async getAll(req, res) {
     try {
-      const projects = await projectModel.find({ user: req.user.userId });
+      const projects = await projectModel.find({ user_id: req.user.userId });
       return res.status(200).json(projects);
     } catch (e) {
       return res.status(500).json({ message: `Error in ${e}, pls try again` });
@@ -27,15 +27,15 @@ class Project {
   }
   async create(req, res) {
     try {
-      const { title, description, users } = req.body;
-      console.log(req.body);
+      const { title, description } = req.body;
+      const candidate = await userModel.findOne({ _id: req.user.userId });
       const project = new projectModel({
         title,
         description,
         user_id: req.user.userId,
         users: {
-          user_id: req.user.userId,
-          email: req.user.email,
+          user_id: candidate._id,
+          email: candidate.email,
           role: "admin",
           permissions: {
             create: true,
@@ -175,6 +175,7 @@ class Project {
         }
       }
       await project.save();
+      return res.status(200).json({ message: "Permission added successfully" });
     } catch (e) {
       return res.status(500).json({ message: `Error in ${e}, pls try again` });
     }

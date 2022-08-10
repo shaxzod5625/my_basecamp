@@ -9,7 +9,7 @@ class Auth {
       const { name, email, password } = req.body;
       const candidate = await User.findOne({ email });
       if (candidate) {
-        return res.send(409).json({ message: "This user already exist" });
+        return res.status(409).json({ message: "This user already exist" });
       }
       const hashPassword = await bcrypt.hashSync(password, 16);
       const user = new User({ name, email, password: hashPassword });
