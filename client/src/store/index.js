@@ -11,6 +11,8 @@ export default new Vuex.Store({
     token: null,
     projects: [],
     project: null,
+    tasks: [],
+    task: null,
     currentPass: null,
     discussions: [],
     discussion: null,
@@ -40,6 +42,12 @@ export default new Vuex.Store({
     },
     SET_PROJECT(state, project) {
       state.project = project;
+    },
+    SET_TASKS(state, tasks) {
+      state.tasks = tasks;
+    },
+    SET_TASK(state, task) {
+      state.task = task;
     },
     SET_AUTH_ERROR_MESSAGE(state, message) {
       state.authErrorMessage = message;
@@ -138,6 +146,59 @@ export default new Vuex.Store({
       try {
         const res = await Api().put(`/projects/update/${project.id}`, project)
         commit('SET_PROJECT', res.data)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    // task
+    async getTasks({ commit }, id) {
+      try {
+        const res = await Api().get(`/projects/${id}/tasks`)
+        commit('SET_TASKS', res.data)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async getTask({ commit }, data) {
+      try {
+        const res = await Api().get(`/projects/${data.id}/tasks/${data.task_id}`)
+        commit('SET_TASK', res.data)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async newTask({ commit }, data) {
+      try {
+        console.log(data);
+        const res = await Api().post(`/projects/${data.id}/tasks/create`, {
+          title: data.title,
+          project_id: data.id,
+        })
+        commit('SET_TASKS', res.data)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async deleteTask({ commit }, data) {
+      try {
+        await Api().delete(`/projects/${data.id}/tasks/delete/${data.task_id}`)
+        commit('SET_TASKS', null)
+      } catch (e) {
+        console.log(e)
+        throw e
+      }
+    },
+    async updateTask({ commit }, data) {
+      try {
+        const res = await Api().put(`/projects/${data.id}/tasks/update/${data.task_id}`, {
+          title: data.title,
+          compleated: data.compleated,
+        })
+        commit('SET_TASKS', res.data)
       } catch (e) {
         console.log(e)
         throw e

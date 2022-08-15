@@ -100,12 +100,12 @@
           </div>
         </div>
         <div class="row mt-4"></div>
-        <form role="form" class="new_task" id="new_task" action="/projects/112/tasks" accept-charset="UTF-8" method="post"><input type="hidden" name="authenticity_token" value="5EqX7B+B4mQzwrjRZln3h+CkMGF/dpNsPHFj7t1B4OOGPMwJkz0XK9fwmonNWB9acZvCwwAjzwwf3VquQEa+8g==">
+        <form role="form" class="new_task" @submit.prevent="addTask" id="new_task" action="" accept-charset="UTF-8" method="post">
           <div class="row mt-3">
             <div class="col-6">
               <div class="form-group">
                 <label class="text-muted required" for="task_title">Add new task</label>
-                <input require="true" class="form-control" type="text" name="task[title]" id="task_title">
+                <input require="true" class="form-control" type="text" id="task_title" v-model="title">
               </div>
             </div>
             <div class="col-4 align-self-end update_btn">
@@ -116,8 +116,33 @@
             </div>
           </div>
         </form>
-        <p class="text-muted" id="tasks">Tasks:</p>
-        <ul class="list-group list-group-flush mb-3"></ul>
+        <p class="text-muted" v-if="tasks.length" id="tasks">Tasks:</p>
+        <ul class="list-group list-group-flush mb-3">
+          <li class="list-group-item" v-for="task in tasks" :key="task._id">
+            <div class="row">
+              <div class="col-1">
+                <a rel="nofollow" @click.prevent="compleateTask(task)" href="">
+                  <svg v-if="!task.compleated" width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"></path></svg>
+                  <svg v-else width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-check2-circle" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M15.354 2.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3-3a.5.5 0 1 1 .708-.708L8 9.293l6.646-6.647a.5.5 0 0 1 .708 0z"></path><path fill-rule="evenodd" d="M8 2.5A5.5 5.5 0 1 0 13.5 8a.5.5 0 0 1 1 0 6.5 6.5 0 1 1-3.25-5.63.5.5 0 1 1-.5.865A5.472 5.472 0 0 0 8 2.5z"></path></svg>
+                </a>
+              </div>
+              <div class="col">
+                <a rel="nofollow" :style="task.compleated ? 'text-decoration: line-through' : ''" @click.prevent="compleateTask(task)" class="text-muted" href="">
+                  {{ task.title }}
+                </a>
+              </div>
+              <div class="col-3"></div>
+              <div class="col-auto">
+                <router-link tag="a" :to="`/projects/${$route.params.id}/task/${task._id}/edit`">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-gear" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path fill-rule="evenodd" d="M8.837 1.626c-.246-.835-1.428-.835-1.674 0l-.094.319A1.873 1.873 0 0 1 4.377 3.06l-.292-.16c-.764-.415-1.6.42-1.184 1.185l.159.292a1.873 1.873 0 0 1-1.115 2.692l-.319.094c-.835.246-.835 1.428 0 1.674l.319.094a1.873 1.873 0 0 1 1.115 2.693l-.16.291c-.415.764.42 1.6 1.185 1.184l.292-.159a1.873 1.873 0 0 1 2.692 1.116l.094.318c.246.835 1.428.835 1.674 0l.094-.319a1.873 1.873 0 0 1 2.693-1.115l.291.16c.764.415 1.6-.42 1.184-1.185l-.159-.291a1.873 1.873 0 0 1 1.116-2.693l.318-.094c.835-.246.835-1.428 0-1.674l-.319-.094a1.873 1.873 0 0 1-1.115-2.692l.16-.292c.415-.764-.42-1.6-1.185-1.184l-.291.159A1.873 1.873 0 0 1 8.93 1.945l-.094-.319zm-2.633-.283c.527-1.79 3.065-1.79 3.592 0l.094.319a.873.873 0 0 0 1.255.52l.292-.16c1.64-.892 3.434.901 2.54 2.541l-.159.292a.873.873 0 0 0 .52 1.255l.319.094c1.79.527 1.79 3.065 0 3.592l-.319.094a.873.873 0 0 0-.52 1.255l.16.292c.893 1.64-.902 3.434-2.541 2.54l-.292-.159a.873.873 0 0 0-1.255.52l-.094.319c-.527 1.79-3.065 1.79-3.592 0l-.094-.319a.873.873 0 0 0-1.255-.52l-.292.16c-1.64.893-3.433-.902-2.54-2.541l.159-.292a.873.873 0 0 0-.52-1.255l-.319-.094c-1.79-.527-1.79-3.065 0-3.592l.319-.094a.873.873 0 0 0 .52-1.255l-.16-.292c-.892-1.64.902-3.433 2.541-2.54l.292.159a.873.873 0 0 0 1.255-.52l.094-.319z"></path><path fill-rule="evenodd" d="M8 5.754a2.246 2.246 0 1 0 0 4.492 2.246 2.246 0 0 0 0-4.492zM4.754 8a3.246 3.246 0 1 1 6.492 0 3.246 3.246 0 0 1-6.492 0z"></path></svg>
+                </router-link>
+                <a @click.prevent="deleteTask(task._id)" href="">
+                  <svg width="1em" height="1em" viewBox="0 0 16 16" class="bi bi-trash" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"></path><path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4L4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"></path></svg>
+                </a>
+              </div>
+            </div>
+          </li>
+        </ul>
         <form role="form" class="edit_project" id="edit_project_112" @submit.prevent="addFile" action="" method="post">
           <div class="row">
             <div class="col-6">
@@ -196,7 +221,9 @@ export default {
     message: '',
     file: '',
     fileName: '',
-    attachments: []
+    attachments: [],
+    title: '',
+    tasks: []
   }),
   async mounted() {
     if (!this.$store.state.user) {
@@ -207,8 +234,37 @@ export default {
     this.project = this.$store.state.project
     this.getDiscussions()
     this.getAttachments()
+    this.getTasks()
   },
   methods: {
+    async compleateTask(task) {
+      await this.$store.dispatch('updateTask', {
+        id: this.$route.params.id,
+        task_id: task._id,
+        title: task.title,
+        compleated: true
+      })
+      this.getTasks()
+    },
+    async addTask() {
+      await this.$store.dispatch('newTask', {
+        title: this.title,
+        id: this.$route.params.id
+      })
+      this.getTasks()
+      this.title = ''
+    },
+    async getTasks() {
+      await this.$store.dispatch('getTasks', this.$route.params.id)
+      this.tasks = this.$store.state.tasks
+    },
+    async deleteTask(task_id) {
+      await this.$store.dispatch('deleteTask', {
+        id: this.$route.params.id,
+        task_id: task_id
+      })
+      this.getTasks()
+    },
     async getAttachments() {
       await this.$store.dispatch('getAttachments', this.$route.params.id)
       this.attachments = this.$store.state.attachments

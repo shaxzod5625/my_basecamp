@@ -32,10 +32,10 @@ route.put('/projects/addPermission/:id', auth, Project.addPermission)
 
 // Task
 route.get('/projects/:id/tasks', auth, Task.getAll);
-route.get('/projects/:id/tasks/:taskId', auth, Task.getOne);
+route.get('/projects/:id/tasks/:task_id', auth, Task.getOne);
 route.post('/projects/:id/tasks/create', auth, Task.create);
-route.delete('/projects/:id/tasks/delete/:id', auth, Task.delete);
-route.put('/projects/:id/tasks/update/:id', auth, Task.update);
+route.delete('/projects/:id/tasks/delete/:task_id', auth, Task.delete);
+route.put('/projects/:id/tasks/update/:task_id', auth, Task.update);
 
 // discussion
 route.get('/projects/:id/discussion', auth, Discussion.getAll);
